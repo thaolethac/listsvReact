@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Listsv.css";
 const datass = [
   {
@@ -73,7 +73,8 @@ const datass = [
   },
 ];
 const Listsv = () => {
-  const [editMsv, setEditMsv] = useState();
+  const [msv, setMsv] = useState("");
+  const [editMsv, setEditMsv] = useState("");
   const [namesv, setNamesv] = useState("");
   const [born, setBorn] = useState("");
   const [khoa, setKhoa] = useState("");
@@ -82,19 +83,30 @@ const Listsv = () => {
   const [datas, setDatas] = useState(datass);
   const [check, setCheck] = useState(false);
   const [search, setSearch] = useState("");
+  const ref = useRef();
+  const reff = useRef();
+
   const Delete = (m) => {
-    document.getElementById(`index${m}`).remove();
-    console.log(m);
+    console.log(typeof(m))
+    setDatas(datas.filter((e) =>{
+        if(e.Msv.toString() === m.toString()){
+            return false
+        } else{
+            return true
+        }
+  }))
+  console.log(datas)
   };
 
-  const Edit = (e, m) => {
-    setEditMsv(m);
+  const Edit = (m) => {
+    setMsv(m);
     setCode(m);
   };
   const Update = () => {
-    console.log(code);
+    var checkk = document.getElementById("checked");
+    var input = checkk.getElementsByTagName("input");
     if (code === 0) {
-      alert("Không có gì để cập nhật");
+      alert("Không có gì để cập nhật!");
     } else {
       var list = document.getElementById(`index${code}`);
       var td = list.getElementsByTagName("td");
@@ -118,11 +130,33 @@ const Listsv = () => {
       } else {
         td[4].innerHTML = khoa;
       }
+      setNamesv("");
+      setKhoa("");
+      setBorn("");
+      setEditMsv("");
+      setMsv("")
+      setSex("");
+      input[0].checked = false;
+      input[1].checked = false;
     }
   };
-
+  useEffect(() => {
+    var checkk = document.getElementById("checked");
+    var input = checkk.getElementsByTagName("input");
+    for (let i = 0; i < datas.length; i++) {
+      if (datas[i].Msv.toString().indexOf(search) > -1) {
+        var trr = document.getElementById(`index${datas[i].Msv}`);
+        trr.style.display = "";
+      } else {
+        var tr = document.getElementById(`index${datas[i].Msv}`);
+        tr.style.display = "none";
+      }
+    }
+  }, [search, datas.length]);
   const Add = () => {
-    if (editMsv === "") {
+    var checkk = document.getElementById("checked");
+    var input = checkk.getElementsByTagName("input");
+    if (msv === "") {
       alert("Bạn chưa nhập ô Mã sinh viên!");
     } else if (namesv === "") {
       alert("Bạn chưa nhập ô Tên sinh viên!");
@@ -134,39 +168,34 @@ const Listsv = () => {
       alert("Bạn chưa nhập ô Khoa!");
     } else {
       for (let i = 0; i < datas.length; i++) {
-        if (editMsv === datas[i].Msv.toString()) {
-          setCheck(false);
+        if (
+          editMsv.toString() === datas[i].Msv.toString() ||
+          msv.toString() === datas[i].Msv.toString()
+        ) {
           alert("Bạn đã nhập trùng Mã sinh viên!");
           return;
         } else {
           setDatas((e) => [
             ...e,
             {
-              Msv: editMsv,
+              Msv: msv,
               Tensv: namesv,
               Ngaysinh: born,
               Gioitinh: sex,
               Khoa: khoa,
             },
           ]);
+          setNamesv("");
+          setKhoa("");
+          setBorn("");
+          setMsv("");
+          input[0].checked = false;
+          input[1].checked = false;
           break;
         }
       }
     }
   };
-
-  useEffect(() => {
-    var body = document.getElementById("tbody");
-    var tr = body.getElementsByTagName("tr");
-    console.log(search);
-    for (let i = 0; i < datas.length; i++) {
-      if (datas[i].Msv.toString().indexOf(search) > -1) {
-        tr[i].style.display = "";
-      } else {
-        tr[i].style.display = "none";
-      }
-    }
-  });
 
   return (
     <div>
@@ -199,18 +228,27 @@ const Listsv = () => {
                 <td>
                   <input
                     type="number"
-                    value={editMsv}
-                    onChange={(e) => setEditMsv(e.target.value)}
+                    value={msv || editMsv}
+                    onChange={(e) => setMsv(e.target.value.toString())}
+                    ref={ref}
                   ></input>
                 </td>
                 <td>
-                  <input onChange={(e) => setNamesv(e.target.value)}></input>
+                  <input
+                    ref={reff}
+                    value={namesv}
+                    onChange={(e) => setNamesv(e.target.value)}
+                  ></input>
                 </td>
                 <td>
-                  <input onChange={(e) => setBorn(e.target.value)}></input>
-                </td>
-                <td style={{ textAlign: "left" }}>
                   <input
+                    value={born}
+                    onChange={(e) => setBorn(e.target.value)}
+                  ></input>
+                </td>
+                <td style={{ textAlign: "left" }} id="checked">
+                  <input
+                    ref={ref}
                     type="radio"
                     name="gioitinh"
                     value="Nam"
@@ -219,6 +257,7 @@ const Listsv = () => {
                   <label>Nam</label>
                   <br></br>
                   <input
+                    ref={ref}
                     type="radio"
                     name="gioitinh"
                     value="Nữ"
@@ -227,7 +266,10 @@ const Listsv = () => {
                   <label>Nữ</label>
                 </td>
                 <td>
-                  <input onChange={(e) => setKhoa(e.target.value)}></input>
+                  <input
+                    value={khoa}
+                    onChange={(e) => setKhoa(e.target.value)}
+                  ></input>
                 </td>
                 <td>
                   <button onClick={Add}>Thêm</button>
